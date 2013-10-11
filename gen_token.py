@@ -26,4 +26,10 @@ Metallica
 >>> print "\t".join(music)
 Abba    Rolling Stones  Black Sabbath   Metallica
 >>>
+
+GENERADORES:
+No permite trabajar de manera optima, cuando pensemos que la estructura sera infinita
+No hace uso de la memoria, como en las listas por ejemplo. Solamente necesita saber cómo
+generar el siguiente valor por lo que no necesita ni reservar espacio ni conocer a priori
+ningún elemento.
 '''
