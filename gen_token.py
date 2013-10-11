@@ -6,7 +6,7 @@ import random
 
 def gen_token(tam=6):
     caracters = string.ascii_letters + string.digits + string.punctuation
-    token = ''.join(random.choice(caracters) for i in range(tam))
+    token = ''.join(random.choice(caracters) for i in range(tam))  # por cada iteracion se elige un caracter
     return token
 
 '''
