@@ -12,8 +12,9 @@ print "hola">3333333
 print "hola">333.333
 
 '''
+
+float*int = float
 float/int = float
 int/float = float
-
 
 '''
