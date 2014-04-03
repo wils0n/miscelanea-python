@@ -9,3 +9,5 @@ def isAlphabeticalWord(word, wordList=word):
     if wordList is None:
         return True
     return word in wordList
+line = inFile.readline()
+field = line.split()
