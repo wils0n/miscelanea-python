@@ -93,11 +93,11 @@ También hay que tener cuidado al import con los mismos nombres
 
 ##1.6 Guía de estilo de código Django
 
-	- Use `underscore`, no camelCase, para mariales, funciones y nombres de métodos.
+	- Use underscore, no camelCase, para mariales, funciones y nombres de métodos.
 	
-	- Use `InitialCaps` para nombres de clases
+	- Use InitialCaps para nombres de clases
 
-	- Use `{{ foo }}`, no esto {{foo}}
+	- Use {{ foo }}, no esto {{foo}}
 
 	- fields names debe ser todo minusculas, using underscore en lugar de camelCase, `first_name`, no `FirstName`, no `First_Name`.
 
@@ -109,3 +109,63 @@ También hay que tener cuidado al import con los mismos nombres
 		def save()
 		def get_absolute_url()
 
+##3.5 Usando una plantilla para generar tu propio Layout
+	
+	django-admin.py startproject --template=https://github.com/	twoscoops/django-twoscoops-project/zipball/master
+
+
+##4.1 Regla de Oro del diseño de aplicaciones de Django
+
+__Cada aplicación debe estar muy focalizada en hacer una tarea.__
+
+>Si una aplicación no puede describir en una sola pabra su tarea y necesita de una o varias conjunciones (y), pues necesita ser particionada en otras más aplicaciones.
+
+##4.2 Cómo nombrar sus apliciones
+
+	- En lo posible mantener una sola palabra para el nombre.
+	- Deben ser una version plural de su modelo principal, aunque hay varias buenas excepciones a esta regla, por ejemplo _blog_
+	- Utilice nombres importables compatibles con PEP-8, nombres en minúsculas, sin números, puntos, espacios o caracteres especiales. Si es necesario para facilitar la lectura, se puede utilizar guiones para separar las palabras, aunque no se recomienda esto.
+
+##4.3 Ante la duda, mantener aplicaciones pequeñas
+
+>Recuerde, es mejor tener muchas aplicaciones pequeñas que tener pocas aplicaciones gigantes.
+
+No se preocupe demasiad<o en conseguir un diseño perfecto. 
+
+A veces hay que volver a reescribirlos o separarlos, esto esta bien.
+
+#5 Archivos Settings y Requirements
+
+Algunas buenas prácticas que debemos seguir son:
+
+* *Todos los archivos settings necesitan estar bajo el control de versiones*
+* *No repetirse*: Debemos heredar de un archivo base en lugar de copiar y pegar el mismo contenido y tener pequeñas variaciones.
+* *Mantener tus claves secretas seguras*: Ellas deben estar fuera del control de versiones
+
+>The SECRET_KEY es usado para firmas criptograficas de django y necesita ser única. Al ser de conocimiento vulnera a muchas protecciones de seguridad de django.
+
+>De la misma forma, los password de las base de datos, claves de AWS, OAuth tokens o cualquier otro datos sensible, necesitan mantenerse fuera del control de versiones.
+
+#5.2 Usando multiples archivos settings
+
+>Esta configuración descrita aqui esta basado en ["The best and worst of django"](https://speakerdeck.com/jacobian/the-best-and-worst-of-django) de Jacob Kaplan-Moss OSCON 2011
+
+	settings/
+		__init__.py
+		base.py
+		local.py
+		staging.py
+		production.py
+		test.py
+
+| Settings file   | Propósito |
+| -------|-----:|
+|base.py         | Configuraciones comunes de todas las instancias del proyecto|
+|local.py        | Este archivo de configuración, usas cuando estas trabajando en tu proyecto localmente. Incluyes el modo DEBUG, herramientras como django-debug-toolbar. Algunas veces los desarrolladores lo llaman dev.py|
+|staging.py      | La versión staging para correr un semi-privada versión de el sitio en un servidor de producción. Este es donde los managers y clientes deben observar antes que sea movido a producción |
+|test.py         | Configuracion para correr pruebas incluyendo pruebas de ejecución, en memoria, en base de datos y de configuracion de logs|
+|production.py   | Estes es el archivo usado en un(os) servidor(es) de produción. Algunas veces es llamado prod.py|
+
+Para elegir algún modo de configuración, por ejemplo para correr el proyecto, sería de la siguiente manera:
+
+	python manage.py runserver --settings=settings.local
