@@ -169,3 +169,36 @@ Algunas buenas prácticas que debemos seguir son:
 Para elegir algún modo de configuración, por ejemplo para correr el proyecto, sería de la siguiente manera:
 
 	python manage.py runserver --settings=settings.local
+
+
+#9. Patrones comunes para formularios
+
+Combinando forms, models y view, permiten realizar un gran cantidad de trabajo con poco esfuerzo.
+
+##9.2 Pattern 1: Simple ModelForm con Validadores por defecto
+Usando `ModelsForms` con `CBV` para implementar add/edit forms puede ser con tan solo pocas lineas de código
+
+	#flavors/views.py
+	from django.views.generic import CreateView, UpdateView
+
+	from braces.views import LoginRequiredMixin
+
+	from .models import Sabor
+
+	class SaborCreateView(LoginRequiredMixin, CreateView):
+		model = Sabor
+
+	class SaborUpdateView(LoginRequiredMixin, UpdateView):
+		model = Sabor
+
+Para resumir, como usa la validación por defecto:
+	
+	- SaborCreateView and FlavorUpdateView son asignado a Sabor como su modelo
+	- Ambas vistas autogeran un ModelForm basado en el modelo Sabor
+	- Estos ModelForms confian en las reglas de validación por defecto de los fields del model Sabor.
+
+Si, Django te brinda muchas grandiosas validaciones de datos por defecto, pero en la práctica, los por defecto nunca son suficientes. Nosotros reconocemos esto, y en siguiente patron demostraremos como create un field validador personalizado.
+
+##9.3 Pattern 2: Validadores pesonalizados en ModelForms
+
+Lo que deseamos es estar seguros que cada `título field` de nuestro postre app, comience con la palabra `Sabroso`.
