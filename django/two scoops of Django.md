@@ -1,4 +1,4 @@
-##1.1 La importancia de hacer tu código entendible
+##1.1 La importancia de hacer tu código legible
 
 Al momento de escribir código, es muy importante realizarlo en un estilo CLARO Y COHERENTE, para cuando vuelvas a leer dentro de unos días, dentro de unos años, sea más FÁCIL DE MANTENER Y MEJORAR y evitar que descifrar inconsistencias.
 
