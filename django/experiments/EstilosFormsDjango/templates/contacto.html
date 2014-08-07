@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contacto</title>
+
+    <meta charset="UTF-8">
+    <meta name="description" content=""/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/kickstart.css" media="all"/>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.7.2.min.js"></script>
+    <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <!-- KICKSTART -->
+    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify.js"></script>
+    <!-- PRETTIFY -->
+    <script type="text/javascript" src="{{ STATIC_URL }}js/kickstart.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css" media="all"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}mystyle.css" media="all"/>
+
+</head>
+<body>
+    <div id="contacto">
+
+        {% if valid %}
+            <div style="position: relative;text-align: center; width:100%;margin:auto">
+                <div class="notice success"><span class="icon medium" data-icon="C"></span>
+                    This is a Success Notice
+                <a href="#close" class="icon close" data-icon="x"></a>
+                </div>
+            </div>
+
+        {% else%}
+            <div style="position: relative;text-align: center; width:100%;margin:auto">
+                <div class="notice error"><span class="icon medium" data-icon="X"></span>
+                This is an Error Notice
+                <a href="#close" class="icon close" data-icon="x"></a>
+                </div>
+            </div>
+        {% endif %}
+
+        <form id="myform" method="post" enctype="multipart/form-data" >
+            {{ form.as_p }}
+            {{ form.Email.required }}
+            <input class="enviar"  style=" margin-left: 35%; width:100px;"  type="submit" value="Enviar" >
+        </form>
+    </div>
+</body>
+</html>
