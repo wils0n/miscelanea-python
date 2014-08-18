@@ -93,7 +93,7 @@ También hay que tener cuidado al import con los mismos nombres
 
 ##1.6 Guía de estilo de código Django
 
-	- Use underscore, no camelCase, para mariales, funciones y nombres de métodos.
+	- Use underscore, no camelCase, para variables, funciones y nombres de métodos.
 	
 	- Use InitialCaps para nombres de clases
 
@@ -130,7 +130,7 @@ __Cada aplicación debe estar muy focalizada en hacer una tarea.__
 
 >Recuerde, es mejor tener muchas aplicaciones pequeñas que tener pocas aplicaciones gigantes.
 
-No se preocupe demasiad<o en conseguir un diseño perfecto. 
+No se preocupe demasiado en conseguir un diseño perfecto. 
 
 A veces hay que volver a reescribirlos o separarlos, esto esta bien.
 
@@ -170,6 +170,89 @@ Para elegir algún modo de configuración, por ejemplo para correr el proyecto, 
 
 	python manage.py runserver --settings=settings.local
 
+#7 Funciones y Clases basadas en Vistas
+
+##7.1 Cuándo usar FBVs or CBVs
+Nosotros preferimos usar CBVs para la mayoria de casos, usando FBV solo en casos complicados que serían un dolor de cabeza con CBVs.
+
+##7.2 Mantenga la lógica fuera de las URLs
+Recuerde que django tiene una manera maravillosamente simple de definir rutas de URL. La simplicidad debe ser honrado y respetado. Las reglas y normas son obvias:
+
+1. El módulo views deben contener la ĺógica.
+2. El módulo URL debe contener las urls.
+
+En síntesis, no hacer lo siguiente:
+
+	urlpatterns = patterns("",
+						   url(r"^something/$", 
+						   	   DetailView.as_view(
+						   	    	model=Tasting,
+						   	    	template_name="tastings/detail.html"
+						   		)
+						   		)
+						   	name="detail"
+						   	)
+#8 Mejores prácticas para Vistas Basadas en Clases
+
+Con un poco de práctica, CBVs permitirán a los desarrolladores crear vistas a un ritmo asombroso.
+
+>###Package tip: CBVs + django-braces son grandiosos juntos
+Sentimos que django-braces es el componente que faltaba para CBVs de Django. Este provee un conjunto de mixin que hacen mucho mas facil y rápido implementar CBV.
+
+Nosotros seguimos las siguientes directrices cuando escribrimos CBVs:
+
+	* Menos código en tus vistas es mejor
+	* Nunca repetir código en las vistas
+	* Las vistas deben manejar la lógica de presentación. Trate de mantener la lógica del negocio en los modelos en cuanto sea posible.
+	* Mantener tus vistas simples
+	* Mantener tus mixin simples
+
+
+##8.1 Usango Mixin con CBVs
+
+Los mixin puede ser usados para agregar funcionalidad y comportamiento extra a tus clases.
+
+Puede usar la potencia de mixin para componer una útil e interesante nueva vista de clase para tus aplicacion de Django.
+
+Cuando usamos mixin para componer nuestas vistas en clases, recomendamos estas reglas de herencias provistas por _Kennet Love_:
+	
+1. Las clases basadas en vistas provistas por django, deben estar siempre a la derecha.
+
+2. Los Mixin deben ir a la izquierda vista base.
+
+3. Un Mixin debe siempre de heredar de un objeto de Python.  
+
+
+Ejemplo de las reglas en acción:
+
+	from django.views.generic import TemplateView
+
+	
+	class FreshFruitMixin(object):
+
+		context = super(FreshFruitMixin, self).get_context_data(**kwargs)
+		context["has_fresh_fuit"]=True
+
+		return context
+
+	class FruitFlavorView(FreshFruitMixin, TemplateView):
+		template_name = "fruit_flavor.html"
+
+En nuestro ejemplo, la clase `FruitFlavorView`, hereda de `FreshFruitMixin` y de `TemplateView`.
+
+`TemplateView`, es una clase basada en vista de Django, este va a ir a la derecha(regla 1) y a la izquiera estarpa `FreshFruitMixin` (regla 2). De esta forma sabremos que nuestros metodos y propiedades se ejecutarán correctamente.
+
+Finalmente, `FreshFruitMixin` hereda de `object` (regla 3).
+
+...
+...
+...
+
+
+
+
+
+
 
 #9. Patrones comunes para formularios
 
@@ -201,4 +284,196 @@ Si, Django te brinda muchas grandiosas validaciones de datos por defecto, pero e
 
 ##9.3 Pattern 2: Validadores pesonalizados en ModelForms
 
-Lo que deseamos es estar seguros que cada `título field` de nuestro postre app, comience con la palabra `Sabroso`.
+Lo que deseamos es estar seguros que cada `título field` de nuestro postre app, comience con la palabra `Tasty`?
+
+Esta es un problema de validación de string, que puede ser resuelta con un simple *custom vield validator.*
+
+En este patron, mostraremos como crear un custom single-field validators y demostrar como agregar luego a un modelo y formulario.
+
+Imagine para el propositio de este ejemplo, que tenemos un proyecton con 2 diferentes modelos: un modelo Sabor para helado de sabadores y un modelo Batido para los diferentes tipos de batidos. Asumimos que ambos models tienen title fields.
+
+Para validar todos los titulos del modelo, comenzamos creando un modulo _validators.py_
+
+	#core/validators.py
+	from django.core.exceptions import ValidationError
+
+	def validate_tasty(value):
+		"""
+		Produce un ValidationError si
+		el valor no inicia con la palabra
+		'Tasty'
+		"""
+		if not value.startswith(u"Tasty"):
+			msg = u"Debe iniciar con Tasty"
+			raise ValidationError(msg)
+
+...
+...
+...
+
+##9.5 Pattern 4: Hacking Form Fields(2 CBV, 2 Forms, 1 Model)
+
+Esta es donde iniciaremos con la forma fancy. Nosotros mostraremos una situación donde 2 views/forms corresponde a 1 modelo. Haremos un hacking a Django forms para producir un formulario con un comportamiento particular.
+
+No es raro que los usuarios creen un registro que contingan algunos campos vacios para información adicional mas adelante. Un ejemplo podría ser una lista de tiendas, donde queremos que cada tienda entre al sistema lo más rápido posible, pero quiero agregar mas datos, como el número de teléfono y la descripción mas tarde. Aqui está nuestro modelo IceCreamStore:
+
+	# stores/models.py
+	from django.core.urlresolvers import reverse
+	from django.db import models
+
+	class IceCreamStore(models.Model):
+		title = models.CharField(max_length=100)
+		block_address = models.TextField()
+		phone = models.CharField(max_length=20, blank=True)
+		description = models.TextField(blank=True)
+
+		def get_absolute_url(self):
+			return reverse("store_detail", kwargs={"pk": self.pk})
+
+El ModelForm por defecto para este model fuerza al usuario a ingresar los campos title y block_address, pero permite al usuario saltarse lso campos phone y description. Esto es genial para la entrada de datos inicial, pero como mencionamos antes, deseamos tener actualizaciones futuras de los datos para solicitar los campos phone y description.
+
+La forma como implementabamos en el pasado era sobreescribir los campos phone y descripcion en un formulario y tener datos duplicados al del modelo, como el siguiente:
+
+	# stores/forms.py
+	from django import forms
+
+	from .models import IceCreamStore
+
+	
+	class IceCreamStoreUpdateForm(forms.ModelForm):
+		# No hacer esto! Duplicar el campo del modelo
+		phone = forms.CharField(required=True)
+		# No hacer esto! Duplicar el campo del modelo
+		phone = forms.CharField(required=True)
+
+		class Meta:
+			models = IceCreanStore
+
+El código anterior esta violando el principio **Don't Repeat Yourself**
+
+Una mejor forma es aplicar los nuevos atricutos de cada campo en el método *__init__()* de ModelForm:
+
+	# stores/forms.py
+	# Lamando a phone y description de self.field dict-line object
+	from django import forms
+
+	from .models improt IceCreamStore
+
+
+	class IceCreamStoreUpdateForm(forms.ModelForm):
+
+		class Meta:
+			model = IceCreamStore
+
+		def __init__(self, *args, **kwargs):
+			# llamar al metodo original __init__ antes de asignar
+			# campos sobrecargados
+			super(IceCreamStoreUpdateForm, self).__init__(*args, **kwargs)
+			self.fields['phone'].required = True
+			self.fields['description'].required = True
+
+Esto permite no violar el principio DRY.
+
+
+	# stores/forms.py
+	from django import forms
+
+	from .models import IceCreamStore
+
+
+	class IceCreamStoreCreateForm(forms.ModelForm):
+
+		class Meta:
+			model = IceCreamStore
+			fields = ("title", "block_address", )
+
+	class IceCreamStoreUpdateForm(IceCreamStoreCreateForm):
+
+		def __init__(self, *args, **kwargs):
+			super(IceCreamStoreUpdateForm, self).__init__(*args, **kwargs)
+			self.fields['phone'].required = True
+			self.fields['description'].required = True
+
+		class Meta(IceCreamStoreCreateForm.Meta)
+			# show all the fields!
+			fields = ("title", "block_address", "phone", "description", )
+
+>Nunca usar ModelForms.Meta.exclude
+
+Finalmente, ahora nosotros tenemos la necesidad de definir las correspondiente CBVs.
+
+	# stores/views
+	from django.views.generic import CreateView, UpdateView
+
+	from .forms import IceCreamStoreCreateForm
+	from .forms import IceCreamStoreUpdateForm
+	from .models import IceCreamStore
+
+
+	class IceCreamCreateView(CreateView):
+		model = IceCreamStore
+		form_class = IceCreamStoreCreateForm
+
+	class IceCreamUpdateView(UpdateView):
+		model = IceCreamStore
+		form_class = IceCreamStoreUpdateForm
+
+Ahora tenemos 2 vistas y 2 forms que trabaja con 1 modelo.
+
+##9.6 Pattern 5: Reusable Search Mixin View
+
+En este ejemplo, vamos a mostrar como reusar un formulario de búsqueda en 2 vistas correspondientes a 2 difentes modelos.
+
+Asumimos que ambos modelos tienen un campo llamado _title_. Este ejemplo demostraremos como un solo CBV puede ser usado para proveer una simple funcionalidad para ambos modelos (Flavor y IceCreamStore).
+
+Comenzaremos creando un simple search mmixin para nuestra vista.
+
+	# core/views.py
+	class TitleSearchMixin(object):
+
+		def get_queryset(self):
+			queryset = super(TitleSearchMixin, self).get_queryset()
+
+			q = self.request.GET.get('q')
+
+			if q:
+				return queryset.filter(title__icontains=q)
+			return queryset
+
+Ahora, haremos que trabaje con las 2 vistas:
+
+	# add to flavors/views.py
+	from django.views.generic import ListView
+
+	from core.views import TitleSearchMixin
+	from .models import Flavor
+
+
+	class FlavorListView(TitleSearchMixin, ListView):
+		model = Flavor
+
+	--------------------------------------------------
+	# add to stores/views.py
+	from django.views.generic import ListView
+
+	from core.views import TitleSearchMixin
+	from .models import Store
+
+
+	class IcreCreamStoreListView(TitleSearchMixin, ListView):
+		model = Store
+
+Ahora tenemos el mismo mixin para ambas vistas. Los Mixin son una buena forma de reusar código, pero uasr muchos mixin hace complicado manter el código. Como siempre, debe mantener su código lo mas simple posible.
+
+#10 More Things to Know About Forms
+
+##10.1 Usar el método POST en formularios HTML
+
+Cada formulario que altera datos, debe enviar sus datos via el método POST.
+
+La única excepción que alguna vez notarás a la utilización del método POST en formularios, es son con los formularios de búsqueda, que normalmente presentar consultas que no dan lugar a ninguna alteración de los datos, éstos deben usar el método POST.
+
+##10.1.1 No desactivar la protección CSRF de Django
+Siempre usar la proteccion csrf con formularios que modifican datos.
+
+
