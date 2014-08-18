@@ -124,7 +124,7 @@ __Cada aplicación debe estar muy focalizada en hacer una tarea.__
 
 	- En lo posible mantener una sola palabra para el nombre.
 	- Deben ser una version plural de su modelo principal, aunque hay varias buenas excepciones a esta regla, por ejemplo _blog_
-	- Utilice nombres importables compatibles con PEP-8, nombres en minúsculas, sin números, puntos, espacios o caracteres especiales. Si es necesario para facilitar la lectura, se puede utilizar guiones para separar las palabras, aunque no se recomienda esto.
+	- Utilice nombres importables compatibles con PEP-8, nombres en minúsculas, sin números, puntos, espacios o caracteres especiales. Si es necesario para facilitar la lectura, se puede utilizar subguiones para separar las palabras, aunque no se recomienda esto.
 
 ##4.3 Ante la duda, mantener aplicaciones pequeñas
 
