@@ -7,6 +7,6 @@
 	mkdir -p $WORKON_HOME
 	source /usr/local/bin/virtualenvwrapper.sh
 
-list, ready for use pip and virtualenv
+ready for use pip and virtualenv
 
 	mkvirtualenv env
