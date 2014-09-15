@@ -3,7 +3,7 @@
 	sudo apt-get install python-setuptools python-dev build-essential
 	sudo apt-get install python-pip
 	sudo pip install virtualenvwrapper
-	mkdir .envs
+	mkdir .virtualenvs
 	export WORKON_HOME=~/.virtualenvs
 	mkdir -p $WORKON_HOME
 	source /usr/local/bin/virtualenvwrapper.sh
